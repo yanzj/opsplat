@@ -1,3 +1,8 @@
+简介：
+   封装jenkins在运维平台打包、立项、申请上线、审批、执行发布、回滚、等功能,平台小而精。
+
+
+安装使用要求：
 1、python2.7   django1.11 、pip install python-jenkins mysql-python
 2、创建数据库python manage.py makemigrations ljapps && python manage.py migrate，创建超级用户
 2、数据库初始化项目tomcat   dubbo  daemon  项目类型Apptype表
@@ -15,3 +20,18 @@
 14、系统内机器IP与应用、负载均衡相关ip等均使用内网IP地址，保持和salt的授信节点ip相同，如不相同部署应用是salt执行命令会找不到对应主机
 15、nginx的负载均衡文件/export/servers/nginx/conf/vhost/nginx_backend.conf，配置切流量功能的tomcat的后端upstream必须存放在此文件中。
 16、必须严格保证/export及次级目录的权限与、salt部署脚本中用户权限相同
+
+立项页面
+![image](https://github.com/renxiaotian/opsplat/blob/master/ljops/static/tupian/lixiang.jpg)
+
+打包页面
+![image](https://github.com/renxiaotian/opsplat/blob/master/ljops/static/tupian/dabao.jpg)
+
+申请发布
+![image](https://github.com/renxiaotian/opsplat/blob/master/ljops/static/tupian/shenqingfabu.jpg)
+
+执行发布
+![image](https://github.com/renxiaotian/opsplat/blob/master/ljops/static/tupian/fabu.jpg)
+
+查看项目
+![image](https://github.com/renxiaotian/opsplat/blob/master/ljops/static/tupian/chakanproject.jpg)
