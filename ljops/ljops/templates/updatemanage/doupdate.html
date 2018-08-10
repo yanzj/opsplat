@@ -1,0 +1,196 @@
+{% extends "index.html" %}
+{% block header %}
+      <link rel="stylesheet" href="//apps.bdimg.com/libs/jqueryui/1.10.4/css/jquery-ui.min.css">
+  <script src="//apps.bdimg.com/libs/jquery/1.10.2/jquery.min.js"></script>
+  <script src="//apps.bdimg.com/libs/jqueryui/1.10.4/jquery-ui.min.js"></script>
+  <link rel="stylesheet" href="jqueryui/style.css">
+  <script>
+  //$(function() {
+   // $( ".progressbar" ).progressbar({
+      //value: false
+  //      value: 0
+   // });
+ // });
+ // </script>
+
+{% endblock %}
+
+{% block content %}
+            <div id="doupdate" class="col-xs-3">
+                <ul class="nav nav-pills nav-stacked">
+                    <li role="presentation" class="active"><a href="#">审批完成</a></li>
+                    {% for app in apps %}
+                        {% if app.ziptest != '' %}
+                            <li id="{{ app.id }}:test" role="presentation"  ><a  class="btn btn-default btn-success beginup" >{{ app.appname }} 测试上线</a></li>
+                        {% endif %}
+                        {% if app.prdlock == '2' %}
+                    <li id="{{ app.id }}:prd" role="presentation"  ><a  class="btn btn-default btn-success beginup" >{{ app.appname }} 生产{% if app.zipprd == app.rb1 %}回滚{% else %}上线{% endif %}</a></li>
+                        {% endif %}
+                        {% if app.prelock == '2' %}
+                    <li id="{{ app.id }}:pre" role="presentation"  ><a  class="btn btn-default btn-success beginup" >{{ app.appname }} 预发{% if app.zippre == app.prerb1 %}回滚{% else %}上线{% endif %}</a></li>
+                        {% endif %}
+                    {% endfor %}
+                </ul>
+            </div>
+    <div id="doupdatetable">
+
+    </div>
+
+<script type="text/javascript">
+$(document).ready(function() {
+    $("#doupdate").on('click','.beginup', function(event) {
+       var aid=$(this).parent().attr("id")
+            $.post("#",{aid:aid},function(data){
+            if(data.status=="success"){
+                $("#doupdatetable").empty()
+                tablehtml=""
+                tablehtml+='<table class="table table-bordered" id="activeupdate"><thead><tr><th>idc</th><th>机器IP</th><th>当前版本</th><th>要更新的版本</th><th>状态</th><th>执行</th></tr></thead><tbody>'
+                for (var hostip in data.hosts){
+                    tablehtml+='<tr id='+data.hosts[hostip]['funcexeid']+'><td>'+data.hosts[hostip]['idc']+'</td><td>'+hostip+'</td><td>'+data.hosts[hostip]['nowver']+'</td><td>'+data.hosts[hostip]['destver']+'</td><td>'
+
+                    tablehtml+="<div  id='bar_"+data.hosts[hostip]['funcexeid']+"' class='progressbar'></div></td><td><a "
+                    if ( data.hosts[hostip]['status']=='2'){
+                        tablehtml+=" style='display: none;'  "
+                    }
+                    tablehtml+="class='btn btn-default btn-success deploy'   role='button'>发布</a><a class='btn btn-default btn-success log'   role='button'>LOG</a>"
+                }
+                tablehtml+="</tbody></table><a id='"+data.funceventid+"_done' class='btn btn-default btn-success done'   role='button'>发布完成</a>"
+                if (data.action=="update"){
+                    tablehtml+="<a  id='"+data.funceventid+"_rollback' class='btn btn-default btn-success rollback'   role='button'>回滚</a>"
+                }
+
+                $("#doupdatetable").append(tablehtml);
+                 for (var hostip in data.hosts){
+                     if (data.hosts[hostip]["success"]==null &&data.hosts[hostip]["status"]=='1'){
+                         $( "#bar_"+data.hosts[hostip]['funcexeid'] ).progressbar({
+                             value: 0
+                         });
+                     }
+                     if(data.hosts[hostip]["status"]=='2'){
+                         $( "#bar_"+data.hosts[hostip]['funcexeid'] ).progressbar({
+                                value: false
+                         });
+                     }
+                     if (data.hosts[hostip]["success"]==true &&data.hosts[hostip]["status"]=='3' ){
+                        $( "#bar_"+data.hosts[hostip]['funcexeid'] ).progressbar({
+                             value: 100
+                         });
+                         var progressbar = $("#bar_"+data.hosts[hostip]['funcexeid'])
+                         var progressbarValue = progressbar.find( ".ui-progressbar-value" )
+                         progressbarValue.css({"background": "#5BDD45"})
+                     }
+                     if (data.hosts[hostip]["success"]==false && data.hosts[hostip]["status"]=='3'){
+                        $( "#bar_"+data.hosts[hostip]['funcexeid'] ).progressbar({
+                             value: 100
+                         });
+                         var progressbar = $("#bar_"+data.hosts[hostip]['funcexeid'])
+                         var progressbarValue = progressbar.find( ".ui-progressbar-value" )
+                         progressbarValue.css({"background": "#F02233"})
+                     }
+                 }
+
+            }else{
+                alert(data.msg)
+                $("#doupdatetable").empty()
+            }
+
+        })
+
+    })
+})
+</script>
+
+<script type="text/javascript">
+
+
+$(document).ready(function() {
+    $("#doupdatetable").on('click','.deploy', function(event) {
+        $(this).attr("disabled",true)
+        var aid=$(this).parent().parent().attr("id")
+        $.post("/ops/api/deploy/",{aid:aid},function(data){
+            if(data.status=='1'){
+                $( "#bar_"+aid ).progressbar({
+                    value: false
+                });
+                function getdepres(aid)
+                { return function (){
+                      $.post("/ops/api/getdepres/",{aid:aid},function(data1){
+                      if(data1.status=='SUCCESS'){
+                          clearInterval(timer)
+                          $( "#bar_"+aid ).progressbar({
+                            value: 100
+                          });
+                          var progressbar = $("#bar_"+aid)
+                          var progressbarValue = progressbar.find( ".ui-progressbar-value" )
+                          progressbarValue.css({"background": "#5BDD45"})
+                      }else if(data1.status=='FAILURE'){
+                          clearInterval(timer)
+                          $( "#bar_"+aid ).progressbar({
+                            value: 100
+                          });
+                          var progressbar = $("#bar_"+aid)
+                          var progressbarValue = progressbar.find( ".ui-progressbar-value" )
+                          progressbarValue.css({"background": "#F02233"})
+                      }
+                    })
+                }
+                }
+                var timer=setInterval (getdepres(aid), 3000);
+            }else if(data.status=='2'){
+                alert("正在运行，误重复提交！")
+            }else {
+                alert("此机器已经更新完成，误重复提交！")
+            }
+        })
+    })
+})
+
+
+$(document).ready(function() {
+    $("#doupdatetable").on('click', '.done', function (event) {
+        var fentid=$(this).attr("id").split("_")[0]
+        $.post("/ops/api/done/",{fentid:fentid},function(data){
+            if(data.status=="success"){
+                alert("更新完成")
+                window.location.reload(true)
+            }else {
+                alert(data.msg)
+            }
+        })
+
+
+    })
+})
+$(document).ready(function() {
+    $("#doupdatetable").on('click', '.rollback', function (event) {
+        var fentid=$(this).attr("id").split("_")[0]
+        $.post("/ops/api/rollback/",{fentid:fentid},function(data){
+            if(data.status=="success"){
+                alert("更新完成")
+                window.location.reload(true)
+            }else {
+                alert(data.msg)
+            }
+        })
+    })
+})
+
+$(document).ready(function() {
+    $("#doupdatetable").on('click','.log', function(event) {
+        var aid=$(this).parent().parent().attr("id")
+        $.post("/ops/api/getexelog/",{aid:aid},function(data){
+            alert(data.msg)
+        })
+    })
+})
+
+
+</script>
+{% endblock %}
+
+
+
+
+
+
+

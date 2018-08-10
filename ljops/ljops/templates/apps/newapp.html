@@ -1,0 +1,391 @@
+﻿{% extends "index.html" %}
+
+{% block content %}
+
+<div class="panel panel-default">
+  <div class="panel-heading">
+		立项
+  </div>
+  <div class="panel-body">
+        <form class="form-horizontal" style="width:880px;">
+                  <div class="form-group">
+            <label for="inputEmail3" class="col-sm-2 control-label">项目组</label>
+            <div class="col-sm-3">
+              <select id='group' class="form-control">
+                <option ></option>
+                  {% for group in groups %}
+                <option value={{ group.id }}>{{ group.name }}</option>
+                  {% endfor %}
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="inputEmail3" class="col-sm-2 control-label">项目类型</label>
+            <div class="col-sm-3">
+              <select id='apptype' class="form-control" onchange="showinfo(this[selectedIndex].value)">
+                <option ></option>
+                  {% for apptype in apptypes %}
+                      {% if apptype.typename == 'tomcat' %}
+                <option value="tomcat">tomcat容器类</option>
+                      {% elif apptype.typename == 'dubbo' %}
+                <option value="dubbo">dubbo独立进程</option>
+                      {% else %}
+                <option value="daemon">独立进程</option>
+                      {% endif %}
+                  {% endfor %}
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label  class="col-sm-2 control-label">项目名称</label>
+            <div class="col-sm-5">
+              <input type="text" class="form-control" id="appname" placeholder="例:app-manager-service">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="inputEmail3" class="col-sm-2 control-label">版本管理类型</label>
+            <div class="col-sm-3">
+              <select id='version' class="form-control" onchange="versiontype(this[selectedIndex].value)">
+                <option ></option>
+                <option value="git">git</option>
+                <option value="svn">svn</option>
+
+              </select>
+            </div>
+          </div>
+
+
+          <div id="git" style="display: none">
+            <div class="form-group">
+              <label  class="col-sm-2 control-label">git地址</label>
+              <div class="col-sm-8">
+                  <input type="text" class="form-control" id="giturl" placeholder="例：git@123.10.2.112:app-manager/app-manager-service.git">
+              </div>
+            </div>
+          </div>
+          <div id="svn" style="display: none">
+            <div class="form-group">
+              <label  class="col-sm-2 control-label">svn地址</label>
+              <div class="col-sm-8">
+                  <input type="text" class="form-control" id="svnurl" placeholder="例：http://123.112.12.24:9000/svn/1169/app-manager/version2/rrs-lj-manager-datacenter">
+              </div>
+            </div>
+          </div>
+
+          <div id="tomcat" style="display: none">
+            <div class="form-group">
+              <label  class="col-sm-2 control-label">JDK版本</label>
+              <div class="col-sm-3">
+                <select id="tomcatjdk" class="form-control">
+                <option value="1.7">JDK1.7</option>
+                <option value="1.8">JDK1.8</option>
+              </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+            <label  class="col-sm-2 control-label">tomcat容器版本</label>
+            <div class="col-sm-3">
+              <select id="tomcatversion" class="form-control">
+                <option value="tomcat7">tomcat7</option>
+                <option value="tomcat8">tomcat8</option>
+              </select>
+            </div>
+            </div>
+
+            <div class="form-group">
+              <label  class="col-sm-2 control-label">url location</label>
+              <div class="col-sm-5">
+                <input type="text" class="form-control" id="urllocation" placeholder="http://www.example.com/{location}/ 程序控制留空">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label  class="col-sm-2 control-label">HTTP端口</label>
+              <div class="col-sm-5">
+                <input type="text" class="form-control" id="httpport" placeholder="8080">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label  class="col-sm-2 control-label">SHUTDOWN端口</label>
+              <div class="col-sm-5">
+                <input type="text" class="form-control" id="shutdownport" placeholder="8005">
+              </div>
+            </div>
+
+            <div class="form-group">
+
+              <label  class="col-sm-2 control-label">其他端口</label>
+              <div class="col-sm-8">
+                  <!--<div class="row col-sm-5">
+                     <input type="text"  class="form-control tomcatotherport" placeholder="8005"><button type="submit" class="btn btn-primary">Transfer cash</button>
+                  </div>-->
+<table>
+      <tbody id="porttabledubbo">
+        <tr>
+          <td style="border:none; "><input type="text"  class="form-control tomcatotherport" placeholder="8005"></td>
+          <td style="border:none; "><a class="btn btn-default btn-success" href="javascript:void(0)" onclick="dubboaddtr()" role="button">+</a></td>
+        </tr>
+      </tbody>
+    </table>
+
+
+              </div>
+            </div>
+
+          </div>
+
+          <div id="dubbo" style="display: none">
+            <div class="form-group">
+              <label  class="col-sm-2 control-label">JDK版本</label>
+              <div class="col-sm-3">
+                <select id="dubbojdk" class="form-control">
+                <option value="1.7">JDK1.7</option>
+                <option value="1.8">JDK1.8</option>
+              </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label  class="col-sm-2 control-label">端口</label>
+              <div class="col-sm-5">
+               <table>
+      <tbody id="porttable">
+        <tr>
+          <td style="border:none; "><input type="text"  class="form-control dubbootherport" placeholder="20000"></td>
+          <td style="border:none; "><a class="btn btn-default btn-success" href="javascript:void(0)" onclick="addtr()" role="button">+</a></td>
+        </tr>
+      </tbody>
+    </table>
+              </div>
+            </div>
+          </div>
+
+                  <div id="daemon" style="display: none">
+            <div class="form-group">
+              <label  class="col-sm-2 control-label">JDK版本</label>
+              <div class="col-sm-3">
+                <select id="daemonjdk" class="form-control">
+                <option value="1.7">JDK1.7</option>
+                <option value="1.8">JDK1.8</option>
+              </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label  class="col-sm-2 control-label">端口</label>
+              <div class="col-sm-5">
+               <table>
+      <tbody id="porttabledaemon">
+        <tr>
+          <td style="border:none; "><input type="text"  class="form-control daemonotherport" placeholder="20000"></td>
+          <td style="border:none; "><a class="btn btn-default btn-success" href="javascript:void(0)" onclick="daemonaddtr()" role="button">+</a></td>
+        </tr>
+      </tbody>
+    </table>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div class="col-sm-offset-2 col-sm-10">
+              <!--<button type="text" class="btn btn-default">提交审批</button>-->
+              <a class="btn btn-default" href="javascript:void(0)" onclick="submsg()" role="button">提交审批</a>
+            </div>
+          </div>
+        </form>
+	</div>
+
+</div>
+
+
+
+
+
+<script type="text/javascript">
+function showinfo(values){
+if(values==''){
+    $("#tomcat").css("display","none");
+    $("#dubbo").css("display","none");
+    $("#daemon").css("display","none");
+}
+if(values=="tomcat"){
+    $("#tomcat").css("display","block");
+    $("#dubbo").css("display","none");
+    $("#daemon").css("display","none");
+}
+if(values=="dubbo" ){
+    $("#tomcat").css("display","none");
+    $("#dubbo").css("display","block");
+    $("#daemon").css("display","none");
+}
+if(values=="daemon"){
+    $("#tomcat").css("display","none");
+    $("#dubbo").css("display","none");
+    $("#daemon").css("display","block");
+}
+}
+
+
+
+function versiontype(values){
+if(values==''){
+    $("#git").css("display","none");
+    $("#svn").css("display","none");
+}
+if(values=="git"){
+    $("#git").css("display","block");
+    $("#svn").css("display","none");
+}
+if(values=="svn" ){
+    $("#git").css("display","none");
+    $("#svn").css("display","block");
+}
+}
+
+</script>
+
+
+<script type="text/javascript">
+function submsg(){
+if($("#apptype").val()=='tomcat'){
+   // if($("#appname").val()!=''){ var appname=$("#appname").val()}
+    var appname=$("#appname").val()
+    var apptype="tomcat"
+    var jdk=$("#tomcatjdk").val()
+    var tomcatversion=$("#tomcatversion").val()
+    var httpport=$("#httpport").val()
+    var shutdownport=$("#shutdownport").val()
+    var gid=$("#group").val()
+    var otherport = new Array();
+    var versiontype=$("#version").val()
+    var urllocation=$("#urllocation").val()
+    if (versiontype=='git'){
+        var vurl=$("#giturl").val()
+    }else {
+        var vurl=$("#svnurl").val()
+    }
+    $(".tomcatotherport").each(function(){
+        if($(this).val()!=''){
+            otherport.push($(this).val())
+        }
+    })
+    if(appname!="" && httpport!="" && shutdownport!="" && gid!="" && vurl!=""){
+        $.post("#",{versiontype:versiontype,vurl:vurl,appname:appname,apptype:apptype,jdk:jdk,tomcatversion:tomcatversion,httpport:httpport,shutdownport:shutdownport,otherport:otherport,gid:gid,urllocation:urllocation},function(data){
+            alert(data.msg)
+            window.location.reload(true)
+        })
+    }
+    else{
+        alert("请填写完整信息")
+    }
+
+}
+else if($("#apptype").val()=='dubbo'){
+    var appname=$("#appname").val()
+    var apptype="dubbo"
+    var jdk=$("#dubbojdk").val()
+    var dbotherport = new Array();
+    var gid=$("#group").val()
+    $(".dubbootherport").each(function(){
+        if($(this).val()!=''){
+            dbotherport.push($(this).val())
+        }
+    })
+        var versiontype=$("#version").val()
+    if (versiontype=='git'){
+        var vurl=$("#giturl").val()
+    }else {
+        var vurl=$("#svnurl").val()
+    }
+    //alert(dbotherport)
+    if(appname!=""&& gid!=""&& vurl!=""){
+        $.post("#",{versiontype:versiontype,vurl:vurl,appname:appname,apptype:apptype,jdk:jdk,dbotherport:dbotherport,gid:gid},function(data){
+            alert(data.msg)
+            window.location.reload(true)
+        })
+    }
+    else{
+        alert("请填写完整信息")
+    }
+}
+
+else if($("#apptype").val()=='daemon'){
+    var appname=$("#appname").val()
+    var apptype="daemon"
+    var jdk=$("#daemonjdk").val()
+    var gid=$("#group").val()
+    var daemonotherport = new Array();
+    var versiontype=$("#version").val()
+    if (versiontype=='git'){
+        var vurl=$("#giturl").val()
+    }else {
+        var vurl=$("#svnurl").val()
+    }
+    $(".daemonotherport").each(function(){
+        if($(this).val()!=''){
+            daemonotherport.push($(this).val())
+        }
+    })
+    if(appname!="" && gid!=""&& vurl!=""){
+        $.post("#",{versiontype:versiontype,vurl:vurl,appname:appname,apptype:apptype,jdk:jdk,daemonotherport:daemonotherport,gid:gid},function(data){
+            alert(data.msg)
+            window.location.reload(true)
+        })
+    }
+    else{
+        alert("请填写完整信息")
+    }
+}
+else {alert('请选择app类型')}
+}
+</script>
+
+
+<script type="text/javascript">
+function addtr(){
+    var html=    "  <tr> <td style='border:none; '><input type='text''  class='form-control tomcatotherport' placeholder='20000'></td>  <td style='border:none; '><button class='deltr btn btn-default btn-danger' role='button'>-</button></td> </tr>"
+$("#porttable").append(html)
+}
+</script>
+<script type="text/javascript">
+$(document).ready(function() {
+    $("#porttable").on('click','.deltr', function(event) {
+
+        $(this).parent().parent().remove()
+    })
+})
+</script>
+
+<script type="text/javascript">
+function dubboaddtr(){
+    var html=    "  <tr> <td style='border:none; '><input type='text''  class='form-control dubbootherport' placeholder='20000'></td>  <td style='border:none; '><button class='dubbodeltr btn btn-default btn-danger' role='button'>-</button></td> </tr>"
+$("#porttabledubbo").append(html)
+}
+</script>
+<script type="text/javascript">
+$(document).ready(function() {
+    $("#porttabledubbo").on('click','.dubbodeltr', function(event) {
+
+        $(this).parent().parent().remove()
+    })
+})
+</script>
+
+<script type="text/javascript">
+function daemonaddtr(){
+    var html=    "  <tr> <td style='border:none; '><input type='text''  class='form-control daemonotherport' placeholder='20000'></td>  <td style='border:none; '><button class='daemondeltr btn btn-default btn-danger' role='button'>-</button></td> </tr>"
+$("#porttabledaemon").append(html)
+}
+</script>
+<script type="text/javascript">
+$(document).ready(function() {
+    $("#porttabledaemon").on('click','.daemondeltr', function(event) {
+
+        $(this).parent().parent().remove()
+    })
+})
+</script>
+{% endblock %}

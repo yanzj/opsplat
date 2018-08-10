@@ -1,0 +1,98 @@
+{% extends "index.html" %}
+
+{% block content %}
+
+<div class="panel panel-default">
+  <div class="panel-heading">
+		立项审批
+  </div>
+  <div class="panel-body">
+
+      <table class="table table-bordered" id="shenpi">
+          <thead>
+          <tr>
+              <th>项目名称</th>
+              <th>项目类型</th>
+              <th>项目组</th>
+              <th>创建者</th>
+              <th>版本管理工具</th>
+              <th>jdk版本</th>
+              <th>tomcat</th>
+              <th>http端口</th>
+              <th>shutdown端口</th>
+              <th>其他端口</th>
+              <th>审批</th>
+          </tr>
+          </thead>
+          <tbody>
+          {% for app in apps %}
+              <tr id={{ app.id }}>
+              <td>{{ app.appname }}</td>
+              <td>{{ app.apptype.typename }}</td>
+              <td>{{ app.appsgroup.name }}</td>
+              <td>
+                  {% for u in app.user.all %}
+                      {{ u.username }}
+                  {% endfor %}
+              </td>
+              <td>{{ app.versionurl }}</td>
+              <td>{{ app.jdkversion }}</td>
+              <td>{{ app.tomcatversion }}</td>
+              <td>
+                  {% for p in app.ports_set.all %}
+                      {% if p.porttype.porttype == 'http' %}
+                          {{ p.portnum }}
+                      {% endif %}
+                  {% endfor %}
+              </td>
+
+              <td>
+                  {% for p in app.ports_set.all %}
+                      {% if p.porttype.porttype == 'tomcat_shutdown' %}
+                          {{ p.portnum }}
+                      {% endif %}
+                  {% endfor %}
+              </td>
+              <td>
+                                    {% for p in app.ports_set.all %}
+                      {% if p.porttype.porttype == 'tcp' %}
+                          {{ p.portnum }}
+                      {% endif %}
+                  {% endfor %}
+              </td>
+              <td><a class="btn btn-default btn-success tongguo"   role="button">通过</a><a class="btn btn-default btn-warning jujue"   role="button">拒绝</a></td>
+              </tr>
+          {% endfor %}
+          </tbody>
+      </table>
+  </div>
+
+</div>
+
+
+
+<script type="text/javascript">
+$(document).ready(function() {
+    $("#shenpi").on('click','.tongguo', function(event) {
+
+       var aid=$(this).parent().parent().attr("id")
+        $.post("#",{aid:aid,action:"tongguo"},function(data){
+            alert(data.msg)
+            window.location.reload(true)
+        })
+    })
+})
+
+$(document).ready(function() {
+    $("#shenpi").on('click','.jujue', function(event) {
+
+       var aid=$(this).parent().parent().attr("id")
+        $.post("#",{aid:aid,action:"jujue"},function(data){
+            alert(data.msg)
+            window.location.reload(true)
+        })
+    })
+})
+</script>
+
+{% endblock %}

@@ -1,0 +1,107 @@
+{% extends "index.html" %}
+
+{% block content %}
+
+<div class="panel panel-default">
+  <div class="panel-heading">
+		发布申请
+  </div>
+  <div class="panel-body">
+
+      <table class="table table-bordered" id="fabu">
+          <thead>
+          <tr>
+              <th>项目名称</th>
+              <th>项目类型</th>
+              <th>项目组</th>
+              <th>发布环境</th>
+              <th>当前版本</th>
+              <th>要发布的版本</th>
+              <th>审批</th>
+          </tr>
+          </thead>
+          <tbody>
+          {% for app in apps %}
+              <tr id={{ app.id }}>
+              <td>{{ app.appname }}</td>
+              <td>{{ app.apptype.typename }}</td>
+              <td>{{ app.appsgroup.name }}</td>
+              <td>
+                <select  class="dest form-control" style="width:70px;" >
+                    <option ></option>
+                    <option value='test'>test</option>
+                    <option value='pre'>pre</option>
+                    <option value='prd'>prd</option>
+                </select>
+              </td>
+                  <td>
+                <select  class="current-ver  form-control" style="width:300px;" disabled="disabled">
+                    <option ></option>
+                    <option value='test'>{{ app.tv }}</option>
+                    <option value='pre'>{{ app.prenow }}</option>
+                    <option value='prd'>{{ app.now }}</option>
+                </select>
+                  </td>
+                  <td>
+                <select  class="dest-ver  form-control" style="width:350px;" disabled="disabled">
+                    <option ></option>
+                    <option value='test'>{{ app.ziptest }}</option>
+                    <option value='pre'>{{ app.zippre }}</option>
+                    <option value='prd'>{{ app.zipprd }}</option>
+                </select>
+                  </td>
+              <td><a class="btn btn-default btn-success tongguo"   role="button">申请发布</a></td>
+              </tr>
+          {% endfor %}
+          </tbody>
+      </table>
+  </div>
+</div>
+
+
+<script  type="text/javascript">
+$(document).ready(function(){
+$('.dest').change(function(){
+    var d=$(this).val()
+    var cur_dom=$(this).parent().next().children()
+    var next_dom=$(this).parent().next().next().children()
+    if (d=='test'){
+        cur_dom.val('test')
+        next_dom.val('test')
+    }
+    if (d=='pre'){
+        cur_dom.val('pre')
+        next_dom.val('pre')
+    }
+    if (d=='prd'){
+        cur_dom.val('prd')
+        next_dom.val('prd')
+    }
+        if (d==''){
+        cur_dom.val('')
+        next_dom.val('')
+    }
+
+})
+})
+</script>
+
+<script type="text/javascript">
+$(document).ready(function() {
+    $("#fabu").on('click','.tongguo', function(event) {
+       var aid=$(this).parent().parent().attr("id")
+        var dest=$(this).parent().prev().prev().prev().children().val()
+        var curver=$(this).parent().prev().prev().children().text().trim()
+        var destver=$(this).parent().prev().children().text().trim()
+        if (dest!="" && destver!=""){
+            $.post("#",{aid:aid,dest:dest,curver:curver,destver:destver},function(data){
+            alert(data.msg)
+        })
+        }else{
+            alert("发布环境和要发布的版本包不能为空,请打对应环境的包。")
+        }
+    })
+})
+</script>
+
+{% endblock %}

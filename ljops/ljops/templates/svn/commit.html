@@ -1,0 +1,73 @@
+{% extends "index.html" %}
+{% block content %}
+
+<button id="commitdata" type="button" class="btn btn-primary btn-lg btn-block" onclick="commit_msg(this)">提交审批</button>
+<div class="lists">
+<form class="form-inline">
+<ul>
+<tr>
+  <td class="tableleft">svn路径</td>
+  <td>
+  <input name="title" type="text"  id="title" style="width:450px;" target="_blank" class="form-control" placeholder="例如:http://202.106.9.134:9055/newsvn/shediao-py/"      maxlength="150"  >
+  <lable>权限</lable>
+  <select class="form-control">
+  <option class="perm" value =""></option>
+  <option value='read'>读</option>
+  <option value='admin'>读写</option>
+  </select>
+  <lable>审批人</lable>
+  <select class="form-control">
+  <option class="apuser" value =""></option>
+  {% for a in ulists %}
+  <option value ={{a.user.id}}>{{a.user.username}}</option>
+  
+  {% endfor %}
+  </select>
+  <lable>注释信息</lable>
+  <input name="content"  type="text" id="content"  class="form-control" style="width:150px;vertical-align:middle;" maxlength="50"  >
+  <input type="button"   class="btn btn-success"  value="增加" id="addTable" onclick="add_tr(this)"/>
+  <input type="button"  class="btn btn-success"   value="删除" id="deleteTable" onclick="del_tr(this)"/>
+  </td>            
+</tr>
+<ul/>
+</form>
+<script src="http://libs.baidu.com/jquery/2.0.0/jquery.min.js"></script>
+<script>
+  function add_tr(obj) {
+    var tr = $(obj).parent().parent();
+    tr.after(tr.clone());
+  }
+   function del_tr(obj) {
+    $(obj).parent().parent().remove();
+  }
+   function commit_msg(obj) {
+    var mydata={};
+    var ok='success';
+    $(".lists").each(function(){
+    mydata[$(this).children().children().val()]={};
+    if($(this).children().children().val()==''||$(this).children().children().after().next().next().val()==''||$(this).children().children().after().next().next().next().next().val()==""){ok='false' ;return false }
+    mydata[$(this).children().children().val()]['perm']=$(this).children().children().after().next().next().val()
+    mydata[$(this).children().children().val()]['appuser']=$(this).children().children().after().next().next().next().next().val()
+    mydata[$(this).children().children().val()]['msg']=$(this).children().children().after().next().next().next().next().next().next().val()
+  });
+   if(ok=='false')
+   {
+    alert("数据错误");
+    return false;
+   }
+   $.ajax({
+                        type: 'POST',
+                        url: ".",
+                        data: {mydata:JSON.stringify(mydata)},
+                        success: function(data){
+                        if(data.message=="done")
+                          
+                         {
+                          alert("提交完成，邮件已发送。")
+                          window.location.reload();};
+                         },
+                        });
+  }
+</script>
+</div>
+{% endblock %}

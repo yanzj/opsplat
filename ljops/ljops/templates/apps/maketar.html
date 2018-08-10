@@ -1,0 +1,191 @@
+{% extends "index.html" %}
+{% block header %}
+      <link rel="stylesheet" href="//apps.bdimg.com/libs/jqueryui/1.10.4/css/jquery-ui.min.css">
+  <script src="//apps.bdimg.com/libs/jquery/1.10.2/jquery.min.js"></script>
+  <script src="//apps.bdimg.com/libs/jqueryui/1.10.4/jquery-ui.min.js"></script>
+  <link rel="stylesheet" href="jqueryui/style.css">
+  <script>
+  $(function() {
+    $( ".progressbar" ).progressbar({
+      //value: false
+        value: 0
+    });
+    $( "button" ).on( "click", function( event ) {
+      var target = $( event.target ),
+        progressbar = $( "#progressbar" ),
+        progressbarValue = progressbar.find( ".ui-progressbar-value" );
+
+      if ( target.is( "#numButton" ) ) {
+        progressbar.progressbar( "option", {
+          value: Math.floor( Math.random() * 100 )
+        });
+      } else if ( target.is( "#colorButton" ) ) {
+        progressbarValue.css({
+          "background": '#' + Math.floor( Math.random() * 16777215 ).toString( 16 )
+        });
+      } else if ( target.is( "#falseButton" ) ) {
+        progressbar.progressbar( "option", "value", false );
+      }
+    });
+  });
+  </script>
+  <style>
+  #progressbar .ui-progressbar-value {
+    background-color: #ccc;
+  }
+  </style>
+{% endblock %}
+{% block content %}
+
+
+
+<div class="panel panel-default">
+  <div class="panel-heading">
+		JENKINS打包构建
+  </div>
+  <div class="panel-body">
+
+      <table class="table table-bordered" id="build">
+          <thead>
+          <tr>
+              <th>项目名称</th>
+              <th>打包的目标环境</th>
+              <th>分支选择</th>
+              <th>构建状态</th>
+              <th>执行</th>
+          </tr>
+          </thead>
+          <tbody>
+          {% for app in apps %}
+              <tr id={{ app.id }}>
+              <td>{{ app.appname }}</td>
+
+              <td>
+                <select id='ver' class="form-control")>
+                <option ></option>
+                    <option value='test'>test</option>
+                    <option value='pre'>pre</option>
+                    <option value='prd'>prd</option>
+                </select>
+              </td>
+              <td>
+                  {% if app.versionmanage == "git"  %}
+                    <select  class="git form-control")>
+                    <option ></option>
+                        <option value='master'>master</option>
+                        <option value='dev'>dev</option>
+                    </select>
+                      {% else %}
+                      svn不需要选择分支
+                  {% endif %}
+              </td>
+              <td>
+                  <div  class="{{ app.id }} progressbar"></div>
+              </td>
+              <td><a id="do_{{ app.id }}" class="btn btn-default btn-success build"   role="button">打包</a><a class="btn btn-default btn-warning consoleout"   role="button">jenkins console out</a></td>
+              </tr>
+          {% endfor %}
+          </tbody>
+      </table>
+      <textarea id="are" class="form-control" rows="30"></textarea>
+  </div>
+
+</div>
+
+
+
+
+
+<script type="text/javascript">
+function getv(values){
+        $.post("/ops/api/app_versiontype/",{appid:values},function(data){
+            if(data.data=='svn'){
+
+            }
+        })
+}
+
+</script>
+
+
+<script type="text/javascript">
+
+
+
+$(document).ready(function() {
+    $("#build").on('click','.build', function(event) {
+        var aid=$(this).parent().parent().attr("id")
+        var thisid=$(this).attr("id")
+        var ver=$(this).parent().prev().prev().prev().children().val()
+        if($(this).parent().prev().prev().children().length > 0){
+            var fenzhi=$(this).parent().prev().prev().children().val()
+        }else{
+            var fenzhi='0'
+        }
+        if(ver!=""){
+            $("#"+thisid).hide();
+            $.post("#",{aid:aid,ver:ver,fenzhi:fenzhi},function(data){
+                if(data.status=='error'){
+                    alert("jenkins项目不存在或者程序错误")
+                }else{
+
+                    if(data.status=='success'){
+                        var jobnum=data.jobnum
+                        //alert("success")
+                        //alert($("."+aid).html())
+                        $( "."+aid ).progressbar({
+                            value: false
+                         });
+
+                        function showTime(aid,jobnum,thisid)
+                        { return function (){
+                              $.post("/ops/api/checkres/",{aid:aid,jobnum:jobnum},function(data){
+                              if(data.status=='SUCCESS'){
+                                  clearInterval(timer)
+                                  $( "."+aid ).progressbar({
+                                    value: 100
+                                  });
+                                  var progressbar = $("."+aid)
+                                  var progressbarValue = progressbar.find( ".ui-progressbar-value" )
+                                  progressbarValue.css({"background": "#5BDD45"})
+                                  $("#"+thisid).show()
+                              }else if(data.status=='FAILURE' || data.status=='ABORTED'){
+                                  clearInterval(timer)
+                                  $( "."+aid ).progressbar({
+                                    value: 100
+                                  });
+                                  var progressbar = $("."+aid)
+                                  var progressbarValue = progressbar.find( ".ui-progressbar-value" )
+                                  progressbarValue.css({"background": "#F02233"})
+                                  $("#"+thisid).show()
+                              }
+                            })
+                        }
+                        }
+                        function sleep(d){
+                            for(var t = Date.now();Date.now() - t <= d;);
+                        }
+                        //sleep(2000);
+
+                        var timer=setInterval (showTime(aid,jobnum,thisid), 3000);
+                    }
+                }
+            })
+        }else{
+            alert("选择发布环境")
+        }
+    })
+})
+
+
+
+$(document).ready(function() {
+    $("#build").on('click','.consoleout', function(event) {
+        var aid=$(this).parent().parent().attr("id")
+        $.post("/ops/api/consoleout/",{aid:aid},function(data){
+            $("#are").val(data.out)
+        })
+    })
+})
+</script>
+{% endblock %}

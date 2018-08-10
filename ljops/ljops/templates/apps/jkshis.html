@@ -1,0 +1,40 @@
+{% extends "index.html" %}
+
+{% block content %}
+
+<div class="panel panel-default">
+  <div class="panel-heading">
+		打包历史
+  </div>
+  <div class="panel-body">
+
+      <table class="table table-bordered" id="shenpi">
+          <thead>
+          <tr>
+              <th>项目名称</th>
+              <th>文件名</th>
+              <th>发布环境</th>
+              <th>打包分支</th>
+          </tr>
+          </thead>
+          <tbody>
+          {% for bh in jkshiss %}
+
+              <tr id={{ bh.id }}>
+              <td>{{ bh.app.appname }}</td>
+              <td>{{ bh.filename }}</td>
+              <td>{{ bh.dest }}</td>
+              <td>{{ bh.branch }}</td>
+              </tr>
+          {% endfor %}
+          </tbody>
+      </table>
+  </div>
+
+</div>
+
+
+
+
+
+{% endblock %}

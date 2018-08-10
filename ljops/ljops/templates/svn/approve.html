@@ -1,0 +1,37 @@
+{% extends "index.html" %}
+{% block content %}
+  {% for i in es %}
+   <input  type="button"   class="btn btn-success"  value={{i.id}}>  <input  type="button"   class="btn btn-success"  value="通过" id="addTable" onclick="pas(this)"/> <input   type="button"   class="btn btn-success"  value="拒绝" id="addTable" onclick="jujue(this)"/> <br/>
+   {%  for a in i.approve_set.all %}
+    {{a.path}} 申请人:{{a.proposer}} 权限:{{a.perm}} <br/>
+   {% endfor %}
+  <hr style="height:3px;border:none;border-top:3px double red;" />
+  {% endfor %}
+  <script src="http://libs.baidu.com/jquery/2.0.0/jquery.min.js"></script>
+  <script>
+  function pas(obj) {
+    var tr = $(obj).prev().val();
+   $.ajax({
+                        type: 'POST',
+                        url: ".",
+                        data: {key:"pas",id:tr},
+                        success: function(data){
+                        if(data.message=="done")
+                         {window.location.reload();};
+                        },
+                        });
+  }
+   function jujue(obj) {
+    var tr = $(obj).prev().prev().val();
+   $.ajax({
+                        type: 'POST',
+                        url: ".",
+                        data: {key:"jujue",id:tr},
+                        success: function(data){
+                        if(data.message=="done")
+                         {window.location.reload();};
+                        },
+                        });
+  }
+  </script>
+{% endblock %}
