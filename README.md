@@ -22,8 +22,7 @@
 16、必须严格保证/export及次级目录的权限与、salt部署脚本中用户权限相同 <br>
 说明，运维平台的构建与部署是一个复杂的事情，各个人的思路不一样，部署很麻烦，任何一个公司的运维平台都这样，后面想再搭建一个都懒得动，有想部署此平台玩玩的朋友，直接加我qq696317，联系我，你找好机器，我直接语音帮助部署起来，但是项目可能好久没碰，自己也不太熟悉了，见谅。
 
-立项页面
-![image](https://github.com/renxiaotian/opsplat/blob/master/ljops/static/tupian/lixiang.jpg)
+
 
 打包页面
 ![image](https://github.com/renxiaotian/opsplat/blob/master/ljops/static/tupian/dabao.jpg)
